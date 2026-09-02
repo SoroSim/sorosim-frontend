@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ArgumentForm from './ArgumentForm'
+import AdvancedArgumentEditor from './AdvancedArgumentEditor'
 import type { ContractFunction, FunctionArgument, SimulationResult, LedgerEntry } from '../types'
 import { simulateInvocation } from '../api/simulationApi'
 
@@ -22,6 +23,7 @@ export default function InvocationPanel({
   const [functionArguments, setFunctionArguments] = useState<FunctionArgument[]>([])
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [simulationError, setSimulationError] = useState<string | null>(null)
+  const [useAdvancedEditor, setUseAdvancedEditor] = useState(false)
 
   const selectedFunctionObj = contractFunctions.find(
     f => f.name === selectedFunction
@@ -60,12 +62,25 @@ export default function InvocationPanel({
     <div className="space-y-6">
       {/* Invocation Arguments */}
       <div className="panel">
-        <div className="panel-header">Function Arguments</div>
+        <div className="panel-header flex justify-between items-center">
+          <span>Function Arguments</span>
+          <button
+            onClick={() => setUseAdvancedEditor(!useAdvancedEditor)}
+            className="text-xs text-stellar-purple hover:underline font-medium"
+          >
+            {useAdvancedEditor ? '📝 Simple Form' : '⚙️ Advanced Editor'}
+          </button>
+        </div>
         <div className="panel-content">
           {!selectedFunction ? (
             <p className="text-gray-500 text-sm">
               Upload a contract and select a function to configure arguments
             </p>
+          ) : useAdvancedEditor ? (
+            <AdvancedArgumentEditor
+              selectedFunction={selectedFunctionObj}
+              onArgumentsChange={setFunctionArguments}
+            />
           ) : (
             <ArgumentForm
               selectedFunction={selectedFunctionObj}
