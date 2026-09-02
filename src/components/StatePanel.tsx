@@ -9,8 +9,12 @@ interface LedgerSnapshot {
   entries: LedgerEntry[]
 }
 
-export default function StatePanel() {
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
+interface StatePanelProps {
+  ledgerEntries: LedgerEntry[]
+  setLedgerEntries: (entries: LedgerEntry[]) => void
+}
+
+export default function StatePanel({ ledgerEntries, setLedgerEntries }: StatePanelProps) {
   const [showSampleMenu, setShowSampleMenu] = useState(false)
 
   const handleExportLedger = () => {

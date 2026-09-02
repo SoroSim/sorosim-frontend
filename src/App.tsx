@@ -2,13 +2,14 @@ import { useState } from 'react'
 import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
-import type { ContractFunction } from './types'
+import type { ContractFunction, LedgerEntry } from './types'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
   const [contractFunctions, setContractFunctions] = useState<string[]>([])
   const [parsedFunctions, setParsedFunctions] = useState<ContractFunction[]>([])
   const [selectedFunction, setSelectedFunction] = useState<string>('')
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,12 +47,16 @@ function App() {
               selectedFunction={selectedFunction}
               wasmFile={wasmFile}
               contractFunctions={parsedFunctions}
+              ledgerEntries={ledgerEntries}
             />
           </div>
 
           {/* Right Panel - State & Results */}
           <div className="lg:col-span-1">
-            <StatePanel />
+            <StatePanel
+              ledgerEntries={ledgerEntries}
+              setLedgerEntries={setLedgerEntries}
+            />
           </div>
         </div>
       </main>
