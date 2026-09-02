@@ -19,14 +19,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: sorosim-frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: sorosim-frontend
         run: npm ci
 
       - name: Run linter
-        working-directory: sorosim-frontend
         run: npm run lint
 
   build:
@@ -44,14 +41,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: sorosim-frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: sorosim-frontend
         run: npm ci
 
       - name: Build project
-        working-directory: sorosim-frontend
         run: npm run build
 
       - name: Upload build artifacts
@@ -59,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: sorosim-frontend/dist
+          path: dist
           retention-days: 7
 
   test:
@@ -77,14 +71,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: sorosim-frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: sorosim-frontend
         run: npm ci
 
       - name: Run tests
-        working-directory: sorosim-frontend
         run: npm run test:run
 
   type-check:
@@ -99,14 +90,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: sorosim-frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: sorosim-frontend
         run: npm ci
 
       - name: Run TypeScript compiler
-        working-directory: sorosim-frontend
         run: npx tsc -b
 
   all-checks:
