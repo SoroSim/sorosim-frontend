@@ -31,7 +31,7 @@ Browser-based Soroban contract simulation and dry-run sandbox with visual state 
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 20+ and npm 10+
 
 ### Installation
 
@@ -139,9 +139,11 @@ sorosim-frontend/
 
 This project uses GitHub Actions for continuous integration:
 - **Lint**: Code quality checks with Oxlint
-- **Build**: Multi-Node (18, 20) matrix builds
+- **Build**: Multi-Node (20, 22) matrix builds
 - **Test**: Unit tests with Vitest across Node versions
 - **Type Check**: TypeScript compilation verification
+
+**Node.js Requirements**: Node 20+ required due to Vite 8 and Vitest 4 dependencies.
 
 All checks must pass before merging pull requests.
 

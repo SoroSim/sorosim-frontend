@@ -183,13 +183,15 @@
 **Status**: ✅ COMPLETED
 - ✅ Created `.github/workflows/ci.yml` workflow file
 - ✅ Lint job with Oxlint
-- ✅ Build job with matrix testing (Node 18, 20)
+- ✅ Build job with matrix testing (Node 20, 22)
 - ✅ Test job running Vitest across Node versions
 - ✅ Type check job verifying TypeScript compilation
 - ✅ All checks job to ensure all tests pass
 - ✅ Build artifact upload (dist folder, 7-day retention)
 - ✅ Triggers on push to main/develop and PRs
 - ✅ Updated README with CI badge and comprehensive documentation
+- ✅ Added Node.js engines requirement (>=20.0.0) to package.json
+- ⚠️ Note: Node 20+ required (Vite 8 uses node:util styleText not available in Node 18)
 
 ## 📊 Progress Summary
 
