@@ -4,7 +4,9 @@ import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
 import InvocationHistory from './components/InvocationHistory'
 import SettingsPanel from './components/SettingsPanel'
+import ShareSessionButton from './components/ShareSessionButton'
 import { exportSession, importSession } from './utils/sessionManager'
+import { decodeSessionFromUrl, hasSessionInUrl, clearSessionFromUrl } from './utils/urlStateManager'
 import type { 
   ContractFunction, 
   LedgerEntry, 
@@ -28,6 +30,7 @@ function App() {
   const [history, setHistory] = useState<InvocationHistoryType[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [sessionLoadedFromUrl, setSessionLoadedFromUrl] = useState(false)
   const [settings, setSettings] = useState<AppSettings>({
     rpcEndpoint: 'https://soroban-testnet.stellar.org',
     network: 'testnet',
@@ -43,6 +46,31 @@ function App() {
         setSettings(parsed)
       } catch (err) {
         console.error('Failed to load settings:', err)
+      }
+    }
+  }, [])
+
+  // Load session from URL on mount
+  useEffect(() => {
+    if (hasSessionInUrl()) {
+      const sessionState = decodeSessionFromUrl()
+      if (sessionState) {
+        setLedgerEntries(sessionState.ledgerEntries)
+        if (sessionState.selectedFunction) {
+          setSelectedFunction(sessionState.selectedFunction)
+        }
+        setSessionLoadedFromUrl(true)
+        
+        // Clear URL parameter to keep URL clean
+        clearSessionFromUrl()
+        
+        // Show notification
+        alert(
+          '✓ Session loaded from URL!\n\n' +
+          `Ledger entries: ${sessionState.ledgerEntries.length}\n` +
+          (sessionState.selectedFunction ? `Function: ${sessionState.selectedFunction}\n` : '') +
+          '\nPlease upload the WASM file to continue.'
+        )
       }
     }
   }, [])
@@ -170,6 +198,24 @@ function App() {
                 {showHistory ? '📋 Hide' : '📜 Show'} History ({history.length})
               </button>
             </div>
+
+            {/* Share Session Button */}
+            <div className="mt-2">
+              <ShareSessionButton
+                state={{
+                  ledgerEntries,
+                  selectedFunction: selectedFunction || undefined,
+                  contractName: wasmFile?.name,
+                }}
+                disabled={ledgerEntries.length === 0}
+              />
+            </div>
+
+            {sessionLoadedFromUrl && (
+              <div className="mt-2 bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800">
+                ✓ Session loaded from shared URL
+              </div>
+            )}
 
             {/* History Sidebar */}
             {showHistory && (
