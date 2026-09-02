@@ -180,19 +180,25 @@
 - ✅ All 32 tests passing ✓
 
 ### Commit #25: ci: add GitHub Actions workflow for lint, build, and Vitest tests
-**Status**: 🔲 TODO
-- Create .github/workflows/ci.yml
-- Run lint on push
-- Run build on push
-- Run tests on push
-- Matrix testing (Node 18, 20)
+**Status**: ✅ COMPLETED
+- ✅ Created `.github/workflows/ci.yml` workflow file
+- ✅ Lint job with Oxlint
+- ✅ Build job with matrix testing (Node 18, 20)
+- ✅ Test job running Vitest across Node versions
+- ✅ Type check job verifying TypeScript compilation
+- ✅ All checks job to ensure all tests pass
+- ✅ Build artifact upload (dist folder, 7-day retention)
+- ✅ Triggers on push to main/develop and PRs
+- ✅ Updated README with CI badge and comprehensive documentation
 
 ## 📊 Progress Summary
 
 - **Total Commits**: 25
-- **Completed**: 24 (96%)
+- **Completed**: 25 (100%) ✅
 - **In Progress**: 0 (0%)
-- **TODO**: 1 (4%)
+- **TODO**: 0 (0%)
+
+🎉 **ALL 25 COMMITS COMPLETED!** 🎉
 
 ## 🛠️ Technical Decisions
 
