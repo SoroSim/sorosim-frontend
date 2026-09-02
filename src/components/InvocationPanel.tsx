@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ArgumentForm from './ArgumentForm'
 import AdvancedArgumentEditor from './AdvancedArgumentEditor'
+import CliOutputPreview from './CliOutputPreview'
 import type { ContractFunction, FunctionArgument, SimulationResult, LedgerEntry } from '../types'
 import { simulateInvocation } from '../api/simulationApi'
 
@@ -24,6 +25,7 @@ export default function InvocationPanel({
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [simulationError, setSimulationError] = useState<string | null>(null)
   const [useAdvancedEditor, setUseAdvancedEditor] = useState(false)
+  const [showCliOutput, setShowCliOutput] = useState(false)
 
   const selectedFunctionObj = contractFunctions.find(
     f => f.name === selectedFunction
@@ -138,9 +140,17 @@ export default function InvocationPanel({
         <div className="panel-header flex justify-between items-center">
           <span>Invocation Result</span>
           {simulationResult && (
-            <span className="text-xs text-gray-500">
-              {new Date().toLocaleTimeString()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">
+                {new Date().toLocaleTimeString()}
+              </span>
+              <button
+                onClick={() => setShowCliOutput(!showCliOutput)}
+                className="text-xs text-stellar-purple hover:underline font-medium"
+              >
+                {showCliOutput ? '📊 UI View' : '⌨️ CLI View'}
+              </button>
+            </div>
           )}
         </div>
         <div className="panel-content">
@@ -155,111 +165,122 @@ export default function InvocationPanel({
           )}
 
           {simulationResult && (
-            <div className="space-y-4">
-              {/* Success/Failure Status Banner */}
-              <div
-                className={`rounded-lg p-4 text-sm font-semibold flex items-center gap-3 ${
-                  simulationResult.success
-                    ? 'bg-green-50 border-2 border-green-500 text-green-800'
-                    : 'bg-red-50 border-2 border-red-500 text-red-800'
-                }`}
-              >
-                <span className="text-2xl">
-                  {simulationResult.success ? '✅' : '❌'}
-                </span>
-                <div>
-                  <div className="text-lg">
-                    {simulationResult.success ? 'Simulation Successful' : 'Simulation Failed'}
+            <>
+              {showCliOutput ? (
+                <CliOutputPreview
+                  functionName={selectedFunction}
+                  args={functionArguments}
+                  result={simulationResult}
+                  wasmFileName={wasmFile?.name}
+                />
+              ) : (
+                <div className="space-y-4">
+                  {/* Success/Failure Status Banner */}
+                  <div
+                    className={`rounded-lg p-4 text-sm font-semibold flex items-center gap-3 ${
+                      simulationResult.success
+                        ? 'bg-green-50 border-2 border-green-500 text-green-800'
+                        : 'bg-red-50 border-2 border-red-500 text-red-800'
+                    }`}
+                  >
+                    <span className="text-2xl">
+                      {simulationResult.success ? '✅' : '❌'}
+                    </span>
+                    <div>
+                      <div className="text-lg">
+                        {simulationResult.success ? 'Simulation Successful' : 'Simulation Failed'}
+                      </div>
+                      <div className="text-xs font-normal opacity-80">
+                        Function: <span className="font-mono">{selectedFunction}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs font-normal opacity-80">
-                    Function: <span className="font-mono">{selectedFunction}</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Return Value Section */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold text-gray-700">
-                    📦 Return Value
+                  {/* Return Value Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm font-semibold text-gray-700">
+                        📦 Return Value
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {selectedFunctionObj?.outputs.join(' | ') || 'unknown'}
+                      </div>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
+                      <pre className="text-xs font-mono text-green-400 overflow-x-auto whitespace-pre-wrap break-all">
+                        {simulationResult.returnValue 
+                          ? tryFormatJson(simulationResult.returnValue)
+                          : 'void'}
+                      </pre>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {selectedFunctionObj?.outputs.join(' | ') || 'unknown'}
-                  </div>
-                </div>
-                <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                  <pre className="text-xs font-mono text-green-400 overflow-x-auto whitespace-pre-wrap break-all">
-                    {simulationResult.returnValue 
-                      ? tryFormatJson(simulationResult.returnValue)
-                      : 'void'}
-                  </pre>
-                </div>
-              </div>
 
-              {/* Error Message (if failed) */}
-              {simulationResult.error && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-700 mb-2">
-                    ⚠️ Error Details
+                  {/* Error Message (if failed) */}
+                  {simulationResult.error && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-700 mb-2">
+                        ⚠️ Error Details
+                      </div>
+                      <div className="bg-red-900 rounded-lg p-3 border border-red-700">
+                        <pre className="text-xs font-mono text-red-300 overflow-x-auto whitespace-pre-wrap">
+                          {simulationResult.error}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Execution Metadata Grid */}
+                  <div>
+                    <div className="text-sm font-semibold text-gray-700 mb-2">
+                      📊 Execution Metrics
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="text-xs text-blue-600 font-medium mb-1">
+                          CPU Instructions
+                        </div>
+                        <div className="text-lg font-bold font-mono text-blue-900">
+                          {simulationResult.executionMetadata.cpuInstructions.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div className="text-xs text-purple-600 font-medium mb-1">
+                          Memory Used
+                        </div>
+                        <div className="text-lg font-bold font-mono text-purple-900">
+                          {formatBytes(simulationResult.executionMetadata.memoryBytes)}
+                        </div>
+                      </div>
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="text-xs text-green-600 font-medium mb-1">
+                          Ledger Reads
+                        </div>
+                        <div className="text-lg font-bold font-mono text-green-900">
+                          {simulationResult.executionMetadata.ledgerReadsCount}
+                        </div>
+                      </div>
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="text-xs text-orange-600 font-medium mb-1">
+                          Ledger Writes
+                        </div>
+                        <div className="text-lg font-bold font-mono text-orange-900">
+                          {simulationResult.executionMetadata.ledgerWritesCount}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-red-900 rounded-lg p-3 border border-red-700">
-                    <pre className="text-xs font-mono text-red-300 overflow-x-auto whitespace-pre-wrap">
-                      {simulationResult.error}
-                    </pre>
+
+                  {/* Quick Stats Summary */}
+                  <div className="bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-600">
+                    💡 <strong>Summary:</strong> Processed in{' '}
+                    {simulationResult.executionMetadata.cpuInstructions.toLocaleString()} instructions
+                    {simulationResult.executionMetadata.ledgerWritesCount > 0 && (
+                      <>, modified {simulationResult.executionMetadata.ledgerWritesCount} ledger {simulationResult.executionMetadata.ledgerWritesCount === 1 ? 'entry' : 'entries'}</>
+                    )}
                   </div>
                 </div>
               )}
-
-              {/* Execution Metadata Grid */}
-              <div>
-                <div className="text-sm font-semibold text-gray-700 mb-2">
-                  📊 Execution Metrics
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="text-xs text-blue-600 font-medium mb-1">
-                      CPU Instructions
-                    </div>
-                    <div className="text-lg font-bold font-mono text-blue-900">
-                      {simulationResult.executionMetadata.cpuInstructions.toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <div className="text-xs text-purple-600 font-medium mb-1">
-                      Memory Used
-                    </div>
-                    <div className="text-lg font-bold font-mono text-purple-900">
-                      {formatBytes(simulationResult.executionMetadata.memoryBytes)}
-                    </div>
-                  </div>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="text-xs text-green-600 font-medium mb-1">
-                      Ledger Reads
-                    </div>
-                    <div className="text-lg font-bold font-mono text-green-900">
-                      {simulationResult.executionMetadata.ledgerReadsCount}
-                    </div>
-                  </div>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                    <div className="text-xs text-orange-600 font-medium mb-1">
-                      Ledger Writes
-                    </div>
-                    <div className="text-lg font-bold font-mono text-orange-900">
-                      {simulationResult.executionMetadata.ledgerWritesCount}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Stats Summary */}
-              <div className="bg-gray-50 border border-gray-200 rounded p-2 text-xs text-gray-600">
-                💡 <strong>Summary:</strong> Processed in{' '}
-                {simulationResult.executionMetadata.cpuInstructions.toLocaleString()} instructions
-                {simulationResult.executionMetadata.ledgerWritesCount > 0 && (
-                  <>, modified {simulationResult.executionMetadata.ledgerWritesCount} ledger {simulationResult.executionMetadata.ledgerWritesCount === 1 ? 'entry' : 'entries'}</>
-                )}
-              </div>
-            </div>
+            </>
           )}
 
           {!simulationResult && !simulationError && (
