@@ -66,17 +66,17 @@ describe('LedgerEntryEditor', () => {
     const onEntriesChange = vi.fn()
     
     // Mock window.confirm to return true
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    vi.stubGlobal('confirm', vi.fn(() => true))
     
     render(<LedgerEntryEditor entries={entries} onEntriesChange={onEntriesChange} />)
     
     const deleteButton = screen.getByRole('button', { name: /delete/i })
     await user.click(deleteButton)
     
-    expect(confirmSpy).toHaveBeenCalled()
+    expect(window.confirm).toHaveBeenCalled()
     expect(onEntriesChange).toHaveBeenCalledWith([])
     
-    confirmSpy.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   it('displays entry count', () => {

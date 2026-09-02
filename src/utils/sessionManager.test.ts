@@ -2,15 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { exportSession, importSession } from './sessionManager'
 import type { InvocationHistory, LedgerEntry } from '../types'
 
-// Mock URL methods
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
-global.URL.revokeObjectURL = vi.fn()
-
 describe('sessionManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Clean up any leftover DOM elements
     document.body.innerHTML = ''
+    
+    // Mock URL methods
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => 'blob:mock-url'),
+      revokeObjectURL: vi.fn(),
+    })
   })
 
   describe('exportSession', () => {
