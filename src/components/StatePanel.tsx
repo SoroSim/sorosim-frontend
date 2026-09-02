@@ -1,21 +1,20 @@
+import { useState } from 'react'
+import LedgerEntryEditor from './LedgerEntryEditor'
+import type { LedgerEntry } from '../types'
+
 export default function StatePanel() {
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
+
   return (
     <div className="space-y-6">
       {/* Mock Ledger State */}
       <div className="panel">
-        <div className="panel-header flex justify-between items-center">
-          <span>Mock Ledger State</span>
-          <button className="text-sm text-stellar-purple hover:underline">
-            + Add Entry
-          </button>
-        </div>
+        <div className="panel-header">Mock Ledger State</div>
         <div className="panel-content">
-          <div className="bg-gray-50 rounded p-4 text-sm text-gray-500">
-            No ledger entries configured yet
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Configure mock ledger entries to simulate contract storage and account state
-          </p>
+          <LedgerEntryEditor
+            entries={ledgerEntries}
+            onEntriesChange={setLedgerEntries}
+          />
         </div>
       </div>
 
