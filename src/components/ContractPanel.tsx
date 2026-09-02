@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import { parseWasmFile, formatFunctionSignature } from '../utils/wasmParser'
+import type { ContractFunction } from '../types'
 
 interface ContractPanelProps {
   wasmFile: File | null
@@ -19,20 +21,40 @@ export default function ContractPanel({
 }: ContractPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [parsedFunctions, setParsedFunctions] = useState<ContractFunction[]>([])
+  const [contractName, setContractName] = useState<string>('')
 
   const handleFileSelect = async (file: File) => {
     if (!file.name.endsWith('.wasm')) {
-      alert('Please upload a valid .wasm file')
+      setError('Please upload a valid .wasm file')
       return
     }
 
-    setWasmFile(file)
+    setIsLoading(true)
+    setError(null)
     
-    // Mock function discovery - in real implementation, parse WASM
-    // For now, simulate contract entry points
-    const mockFunctions = ['initialize', 'transfer', 'balance', 'approve', 'allowance']
-    setContractFunctions(mockFunctions)
-    setSelectedFunction(mockFunctions[0])
+    try {
+      // Parse WASM file to extract functions
+      const result = await parseWasmFile(file)
+      
+      setWasmFile(file)
+      setParsedFunctions(result.functions)
+      setContractName(result.contractName || file.name)
+      
+      const functionNames = result.functions.map(f => f.name)
+      setContractFunctions(functionNames)
+      setSelectedFunction(functionNames[0] || '')
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse WASM file')
+      setWasmFile(null)
+      setParsedFunctions([])
+      setContractFunctions([])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -103,40 +125,84 @@ export default function ContractPanel({
             aria-label="File input for WASM upload"
           />
           
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 48 48"
-            aria-hidden="true"
-          >
-            <path
-              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          
-          <p className="mt-2 text-sm text-gray-600">
-            {wasmFile ? (
-              <span className="font-medium text-stellar-purple">{wasmFile.name}</span>
-            ) : (
-              <>
-                <span className="font-medium">Drop WASM file here</span>
-                <br />
-                or paste from clipboard
-              </>
-            )}
-          </p>
-          
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 btn-secondary"
-          >
-            Browse Files
-          </button>
+          {isLoading ? (
+            <div className="flex flex-col items-center">
+              <svg
+                className="animate-spin h-12 w-12 text-stellar-purple"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <p className="mt-2 text-sm text-gray-600">Parsing WASM...</p>
+            </div>
+          ) : (
+            <>
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              
+              <p className="mt-2 text-sm text-gray-600">
+                {wasmFile ? (
+                  <span className="font-medium text-stellar-purple">{wasmFile.name}</span>
+                ) : (
+                  <>
+                    <span className="font-medium">Drop WASM file here</span>
+                    <br />
+                    or paste from clipboard
+                  </>
+                )}
+              </p>
+              
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-4 btn-secondary"
+              >
+                Browse Files
+              </button>
+            </>
+          )}
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-800">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* Contract Name */}
+        {contractName && (
+          <div className="bg-stellar-purple bg-opacity-10 border border-stellar-purple rounded p-3">
+            <p className="text-sm font-semibold text-stellar-purple">
+              📄 {contractName}
+            </p>
+          </div>
+        )}
 
         {/* Function Selector */}
         {contractFunctions.length > 0 && (
@@ -156,6 +222,18 @@ export default function ContractPanel({
                 </option>
               ))}
             </select>
+            
+            {/* Function Signature Display */}
+            {selectedFunction && parsedFunctions.length > 0 && (
+              <div className="mt-2 bg-gray-50 rounded p-3">
+                <p className="text-xs text-gray-500 mb-1">Signature:</p>
+                <code className="text-xs font-mono text-gray-700">
+                  {formatFunctionSignature(
+                    parsedFunctions.find(f => f.name === selectedFunction)!
+                  )}
+                </code>
+              </div>
+            )}
           </div>
         )}
 
