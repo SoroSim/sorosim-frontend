@@ -61,14 +61,14 @@ export default function InvocationPanel({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Invocation Arguments */}
       <div className="panel">
-        <div className="panel-header flex justify-between items-center">
+        <div className="panel-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <span>Function Arguments</span>
           <button
             onClick={() => setUseAdvancedEditor(!useAdvancedEditor)}
-            className="text-xs text-stellar-purple hover:underline font-medium"
+            className="text-xs text-stellar-purple hover:underline font-medium whitespace-nowrap"
           >
             {useAdvancedEditor ? '📝 Simple Form' : '⚙️ Advanced Editor'}
           </button>
@@ -98,7 +98,7 @@ export default function InvocationPanel({
           <button
             onClick={handleSimulate}
             disabled={!wasmFile || !selectedFunction || isSimulating}
-            className="btn-primary w-full text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full text-base md:text-lg py-2.5 md:py-3 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             {isSimulating ? (
               <span className="flex items-center justify-center">
@@ -137,7 +137,7 @@ export default function InvocationPanel({
 
       {/* Results Preview */}
       <div className="panel">
-        <div className="panel-header flex justify-between items-center">
+        <div className="panel-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <span>Invocation Result</span>
           {simulationResult && (
             <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export default function InvocationPanel({
               </span>
               <button
                 onClick={() => setShowCliOutput(!showCliOutput)}
-                className="text-xs text-stellar-purple hover:underline font-medium"
+                className="text-xs text-stellar-purple hover:underline font-medium whitespace-nowrap"
               >
                 {showCliOutput ? '📊 UI View' : '⌨️ CLI View'}
               </button>
@@ -234,36 +234,36 @@ export default function InvocationPanel({
                     <div className="text-sm font-semibold text-gray-700 mb-2">
                       📊 Execution Metrics
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 md:p-3">
                         <div className="text-xs text-blue-600 font-medium mb-1">
                           CPU Instructions
                         </div>
-                        <div className="text-lg font-bold font-mono text-blue-900">
+                        <div className="text-base md:text-lg font-bold font-mono text-blue-900">
                           {simulationResult.executionMetadata.cpuInstructions.toLocaleString()}
                         </div>
                       </div>
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 md:p-3">
                         <div className="text-xs text-purple-600 font-medium mb-1">
                           Memory Used
                         </div>
-                        <div className="text-lg font-bold font-mono text-purple-900">
+                        <div className="text-base md:text-lg font-bold font-mono text-purple-900">
                           {formatBytes(simulationResult.executionMetadata.memoryBytes)}
                         </div>
                       </div>
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-2 md:p-3">
                         <div className="text-xs text-green-600 font-medium mb-1">
                           Ledger Reads
                         </div>
-                        <div className="text-lg font-bold font-mono text-green-900">
+                        <div className="text-base md:text-lg font-bold font-mono text-green-900">
                           {simulationResult.executionMetadata.ledgerReadsCount}
                         </div>
                       </div>
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 md:p-3">
                         <div className="text-xs text-orange-600 font-medium mb-1">
                           Ledger Writes
                         </div>
-                        <div className="text-lg font-bold font-mono text-orange-900">
+                        <div className="text-base md:text-lg font-bold font-mono text-orange-900">
                           {simulationResult.executionMetadata.ledgerWritesCount}
                         </div>
                       </div>

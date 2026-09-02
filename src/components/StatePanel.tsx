@@ -90,19 +90,19 @@ export default function StatePanel({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Mock Ledger State */}
       <div className="panel">
-        <div className="panel-header flex justify-between items-center">
+        <div className="panel-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <span>Mock Ledger State</span>
           
           {/* Import/Export Actions */}
-          <div className="flex gap-3 items-center">
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
             {/* Sample Snapshots */}
             <div className="relative">
               <button
                 onClick={() => setShowSampleMenu(!showSampleMenu)}
-                className="text-sm text-gray-600 hover:text-stellar-purple font-medium"
+                className="text-sm text-gray-600 hover:text-stellar-purple font-medium whitespace-nowrap"
                 title="Load sample snapshot"
               >
                 📋 Samples
@@ -131,7 +131,7 @@ export default function StatePanel({
 
             <label
               htmlFor="import-ledger"
-              className="text-sm text-stellar-purple hover:underline cursor-pointer font-medium"
+              className="text-sm text-stellar-purple hover:underline cursor-pointer font-medium whitespace-nowrap"
               title="Import ledger snapshot"
             >
               📥 Import
@@ -147,7 +147,7 @@ export default function StatePanel({
             <button
               onClick={handleExportLedger}
               disabled={ledgerEntries.length === 0}
-              className="text-sm text-stellar-purple hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-sm text-stellar-purple hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               title="Export ledger snapshot"
             >
               📤 Export

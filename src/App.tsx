@@ -144,23 +144,23 @@ function App() {
       </a>
 
       {/* Header */}
-      <header className="bg-stellar-dark text-white py-4 px-6 shadow-lg" role="banner">
-        <div className="container mx-auto flex items-center justify-between">
+      <header className="bg-stellar-dark text-white py-3 md:py-4 px-4 md:px-6 shadow-lg" role="banner">
+        <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-xl md:text-2xl font-bold">
               <span className="text-stellar-purple">Soro</span>Sim
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-400 text-xs md:text-sm mt-1">
               Soroban Contract Simulation & Dry-Run Sandbox
             </p>
           </div>
           
           {/* Header Actions */}
           <nav aria-label="Main navigation">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
               {/* Network Badge */}
               <div 
-                className="bg-gray-700 px-3 py-1 rounded text-xs font-medium"
+                className="bg-gray-700 px-2 md:px-3 py-1 rounded text-xs font-medium"
                 role="status"
                 aria-label={`Current network: ${settings.network}`}
               >
@@ -170,7 +170,7 @@ function App() {
               {/* Settings Button */}
               <button
                 onClick={() => setShowSettings(true)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                className="px-3 md:px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-xs md:text-sm font-medium transition-colors touch-manipulation"
                 aria-label="Open settings"
               >
                 ⚙️ Settings
@@ -179,7 +179,7 @@ function App() {
               {/* Import Session */}
               <label
                 htmlFor="import-session"
-                className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                className="cursor-pointer px-3 md:px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-xs md:text-sm font-medium transition-colors touch-manipulation"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -188,7 +188,7 @@ function App() {
                   }
                 }}
               >
-                📂 Import Session
+                📂 Import
               </label>
               <input
                 id="import-session"
@@ -218,10 +218,11 @@ function App() {
       />
 
       {/* Main Content - 3 Panel Layout */}
-      <main id="main-content" className="container mx-auto p-6" role="main">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main id="main-content" className="container mx-auto p-4 md:p-6" role="main">
+        {/* Responsive Grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left Panel - Contract Upload & Configuration */}
-          <section aria-label="Contract configuration" className="lg:col-span-1">
+          <section aria-label="Contract configuration" className="md:col-span-2 lg:col-span-1">
             <ContractPanel
               wasmFile={wasmFile}
               setWasmFile={setWasmFile}
@@ -237,7 +238,7 @@ function App() {
             <div className="mt-4">
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                className={`w-full px-4 py-2.5 md:py-2 rounded-md font-medium transition-colors touch-manipulation ${
                   showHistory
                     ? 'bg-stellar-purple text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
