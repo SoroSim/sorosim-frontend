@@ -6,11 +6,29 @@ interface ArgumentFormProps {
   onArgumentsChange: (args: FunctionArgument[]) => void
 }
 
+const AVAILABLE_TYPES: ScValType[] = [
+  'Address',
+  'Bool',
+  'String',
+  'Symbol',
+  'i128',
+  'u128',
+  'i64',
+  'u64',
+  'i32',
+  'u32',
+  'Bytes',
+  'Vec',
+  'Map',
+  'Void',
+]
+
 export default function ArgumentForm({
   selectedFunction,
   onArgumentsChange,
 }: ArgumentFormProps) {
   const [arguments_, setArguments] = useState<FunctionArgument[]>([])
+  const [isTypeOverrideEnabled, setIsTypeOverrideEnabled] = useState(false)
 
   // Initialize arguments when function changes
   useEffect(() => {
@@ -35,6 +53,14 @@ export default function ArgumentForm({
     onArgumentsChange(newArgs)
   }
 
+  const handleTypeChange = (index: number, newType: ScValType) => {
+    const newArgs = [...arguments_]
+    newArgs[index].type = newType
+    newArgs[index].value = getDefaultValue(newType)
+    setArguments(newArgs)
+    onArgumentsChange(newArgs)
+  }
+
   if (!selectedFunction || selectedFunction.inputs.length === 0) {
     return (
       <div className="text-sm text-gray-500">
@@ -45,23 +71,81 @@ export default function ArgumentForm({
 
   return (
     <div className="space-y-4">
+      {/* Type Override Toggle */}
+      <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded p-2">
+        <label htmlFor="type-override-toggle" className="text-xs text-blue-800 font-medium">
+          Enable Type Override
+        </label>
+        <input
+          id="type-override-toggle"
+          type="checkbox"
+          checked={isTypeOverrideEnabled}
+          onChange={(e) => setIsTypeOverrideEnabled(e.target.checked)}
+          className="h-4 w-4 text-stellar-purple focus:ring-stellar-purple border-gray-300 rounded"
+        />
+      </div>
+
+      {isTypeOverrideEnabled && (
+        <div className="bg-yellow-50 border border-yellow-300 rounded p-2 text-xs text-yellow-800">
+          ⚠️ Type override is enabled. You can change argument types, but ensure values are valid for the selected type.
+        </div>
+      )}
+
       {selectedFunction.inputs.map((input, index) => (
-        <div key={`${input.name}-${index}`}>
-          <label htmlFor={`arg-${index}`} className="label">
-            {input.name}
-            <span className="ml-2 text-xs font-normal text-gray-500">
-              ({input.type})
-            </span>
-          </label>
-          {renderInputForType(
-            input.type,
-            arguments_[index]?.value || '',
-            (value) => handleArgumentChange(index, value),
-            `arg-${index}`
+        <div key={`${input.name}-${index}`} className="border border-gray-200 rounded p-3 space-y-3">
+          {/* Argument Header */}
+          <div className="flex items-start justify-between">
+            <div>
+              <label htmlFor={`arg-${index}`} className="label mb-0">
+                {input.name}
+              </label>
+              <p className="text-xs text-gray-500">
+                Original type: <span className="font-mono">{input.type}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Type Selector (if override enabled) */}
+          {isTypeOverrideEnabled && (
+            <div>
+              <label htmlFor={`type-${index}`} className="text-xs font-medium text-gray-700 block mb-1">
+                Override Type
+              </label>
+              <select
+                id={`type-${index}`}
+                value={arguments_[index]?.type || input.type}
+                onChange={(e) => handleTypeChange(index, e.target.value as ScValType)}
+                className="input-field text-sm"
+              >
+                {AVAILABLE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
-          <p className="mt-1 text-xs text-gray-500">
-            {getTypeHint(input.type)}
-          </p>
+
+          {/* Value Input */}
+          <div>
+            <label htmlFor={`arg-${index}`} className="text-xs font-medium text-gray-700 block mb-1">
+              Value
+              {isTypeOverrideEnabled && arguments_[index]?.type !== input.type && (
+                <span className="ml-2 text-stellar-purple">
+                  (using {arguments_[index]?.type})
+                </span>
+              )}
+            </label>
+            {renderInputForType(
+              arguments_[index]?.type || input.type,
+              arguments_[index]?.value || '',
+              (value) => handleArgumentChange(index, value),
+              `arg-${index}`
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              {getTypeHint(arguments_[index]?.type || input.type)}
+            </p>
+          </div>
         </div>
       ))}
     </div>
