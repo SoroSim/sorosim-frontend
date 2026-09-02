@@ -4,7 +4,14 @@ import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
 import InvocationHistory from './components/InvocationHistory'
 import { exportSession, importSession } from './utils/sessionManager'
-import type { ContractFunction, LedgerEntry, StateDiff, ContractEvent, InvocationHistory as InvocationHistoryType } from './types'
+import type { 
+  ContractFunction, 
+  LedgerEntry, 
+  StateDiff, 
+  ContractEvent, 
+  InvocationHistory as InvocationHistoryType,
+  ContractPreset
+} from './types'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
@@ -30,6 +37,19 @@ function App() {
     } catch (err) {
       alert(`Failed to import session: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
+  }
+
+  const handlePresetLoad = (preset: ContractPreset) => {
+    // Load sample ledger state
+    setLedgerEntries(preset.sampleLedgerState)
+    
+    // Show info message
+    alert(
+      `Loaded preset: ${preset.name}\n\n` +
+      `✓ ${preset.sampleLedgerState.length} ledger entries loaded\n` +
+      `✓ ${preset.sampleInvocations.length} sample invocations available\n\n` +
+      `Note: Please upload the actual WASM file to continue.`
+    )
   }
 
   return (
@@ -84,6 +104,7 @@ function App() {
               selectedFunction={selectedFunction}
               setSelectedFunction={setSelectedFunction}
               setParsedFunctions={setParsedFunctions}
+              onPresetLoad={handlePresetLoad}
             />
             
             {/* History Toggle Button */}

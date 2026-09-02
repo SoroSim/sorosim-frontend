@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { parseWasmFile, formatFunctionSignature } from '../utils/wasmParser'
-import type { ContractFunction } from '../types'
+import ContractPresetLoader from './ContractPresetLoader'
+import type { ContractFunction, ContractPreset } from '../types'
 
 interface ContractPanelProps {
   wasmFile: File | null
@@ -10,6 +11,7 @@ interface ContractPanelProps {
   selectedFunction: string
   setSelectedFunction: (fn: string) => void
   setParsedFunctions: (functions: ContractFunction[]) => void
+  onPresetLoad?: (preset: ContractPreset) => void
 }
 
 export default function ContractPanel({
@@ -20,6 +22,7 @@ export default function ContractPanel({
   selectedFunction,
   setSelectedFunction,
   setParsedFunctions,
+  onPresetLoad,
 }: ContractPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -256,6 +259,17 @@ export default function ContractPanel({
             </div>
           </div>
         )}
+
+        {/* Preset Loader */}
+        <div className="mt-4">
+          <ContractPresetLoader
+            onLoadPreset={(preset) => {
+              if (onPresetLoad) {
+                onPresetLoad(preset)
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   )
