@@ -2,10 +2,12 @@ import { useState } from 'react'
 import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
+import type { ContractFunction } from './types'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
   const [contractFunctions, setContractFunctions] = useState<string[]>([])
+  const [parsedFunctions, setParsedFunctions] = useState<ContractFunction[]>([])
   const [selectedFunction, setSelectedFunction] = useState<string>('')
 
   return (
@@ -34,6 +36,7 @@ function App() {
               setContractFunctions={setContractFunctions}
               selectedFunction={selectedFunction}
               setSelectedFunction={setSelectedFunction}
+              setParsedFunctions={setParsedFunctions}
             />
           </div>
 
@@ -42,6 +45,7 @@ function App() {
             <InvocationPanel
               selectedFunction={selectedFunction}
               wasmFile={wasmFile}
+              contractFunctions={parsedFunctions}
             />
           </div>
 

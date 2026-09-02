@@ -9,6 +9,7 @@ interface ContractPanelProps {
   setContractFunctions: (functions: string[]) => void
   selectedFunction: string
   setSelectedFunction: (fn: string) => void
+  setParsedFunctions: (functions: ContractFunction[]) => void
 }
 
 export default function ContractPanel({
@@ -18,12 +19,13 @@ export default function ContractPanel({
   setContractFunctions,
   selectedFunction,
   setSelectedFunction,
+  setParsedFunctions,
 }: ContractPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [parsedFunctions, setParsedFunctions] = useState<ContractFunction[]>([])
+  const [localParsedFunctions, setLocalParsedFunctions] = useState<ContractFunction[]>([])
   const [contractName, setContractName] = useState<string>('')
 
   const handleFileSelect = async (file: File) => {
@@ -40,6 +42,7 @@ export default function ContractPanel({
       const result = await parseWasmFile(file)
       
       setWasmFile(file)
+      setLocalParsedFunctions(result.functions)
       setParsedFunctions(result.functions)
       setContractName(result.contractName || file.name)
       
@@ -50,6 +53,7 @@ export default function ContractPanel({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse WASM file')
       setWasmFile(null)
+      setLocalParsedFunctions([])
       setParsedFunctions([])
       setContractFunctions([])
     } finally {
@@ -224,12 +228,12 @@ export default function ContractPanel({
             </select>
             
             {/* Function Signature Display */}
-            {selectedFunction && parsedFunctions.length > 0 && (
+            {selectedFunction && localParsedFunctions.length > 0 && (
               <div className="mt-2 bg-gray-50 rounded p-3">
                 <p className="text-xs text-gray-500 mb-1">Signature:</p>
                 <code className="text-xs font-mono text-gray-700">
                   {formatFunctionSignature(
-                    parsedFunctions.find(f => f.name === selectedFunction)!
+                    localParsedFunctions.find(f => f.name === selectedFunction)!
                   )}
                 </code>
               </div>

@@ -1,15 +1,24 @@
 import { useState } from 'react'
+import ArgumentForm from './ArgumentForm'
+import type { ContractFunction, FunctionArgument } from '../types'
 
 interface InvocationPanelProps {
   selectedFunction: string
   wasmFile: File | null
+  contractFunctions: ContractFunction[]
 }
 
 export default function InvocationPanel({
   selectedFunction,
   wasmFile,
+  contractFunctions,
 }: InvocationPanelProps) {
   const [isSimulating, setIsSimulating] = useState(false)
+  const [functionArguments, setFunctionArguments] = useState<FunctionArgument[]>([])
+
+  const selectedFunctionObj = contractFunctions.find(
+    f => f.name === selectedFunction
+  ) || null
 
   const handleSimulate = async () => {
     if (!wasmFile || !selectedFunction) {
@@ -22,6 +31,7 @@ export default function InvocationPanel({
     // Simulate API call delay
     setTimeout(() => {
       setIsSimulating(false)
+      console.log('Simulating with arguments:', functionArguments)
       alert('Simulation complete! (Backend integration pending)')
     }, 1500)
   }
@@ -37,16 +47,10 @@ export default function InvocationPanel({
               Upload a contract and select a function to configure arguments
             </p>
           ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Function: <span className="font-mono font-semibold">{selectedFunction}</span>
-              </p>
-              
-              {/* Dynamic argument form placeholder */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
-                ⚠️ Dynamic argument form will be implemented in commit #5-6
-              </div>
-            </div>
+            <ArgumentForm
+              selectedFunction={selectedFunctionObj}
+              onArgumentsChange={setFunctionArguments}
+            />
           )}
         </div>
       </div>
