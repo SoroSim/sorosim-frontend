@@ -165,12 +165,19 @@
 - ✅ Optimized text sizes for medium screens (768px-1024px)
 
 ### Commit #24: test: add Vitest + Testing Library unit tests
-**Status**: 🔲 TODO
-- Install vitest, @testing-library/react
-- Unit tests for ContractPanel
-- Unit tests for argument forms
-- Unit tests for diff viewer
-- Test coverage reports
+**Status**: ✅ COMPLETED
+- ✅ Installed vitest, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, jsdom, @vitest/ui
+- ✅ Configured Vitest in vite.config.ts with jsdom environment
+- ✅ Created test setup file with jest-dom matchers
+- ✅ Unit tests for ArgumentForm component (5 tests)
+- ✅ Unit tests for StateDiffViewer component (6 tests)
+- ✅ Unit tests for ContractEventsViewer component (5 tests)
+- ✅ Unit tests for LedgerEntryEditor component (6 tests)
+- ✅ Unit tests for wasmParser utility (5 tests)
+- ✅ Unit tests for sessionManager utility (5 tests)
+- ✅ Added test scripts to package.json (test, test:ui, test:run, test:coverage)
+- ✅ Excluded test files from TypeScript build
+- ✅ All 32 tests passing ✓
 
 ### Commit #25: ci: add GitHub Actions workflow for lint, build, and Vitest tests
 **Status**: 🔲 TODO
@@ -183,9 +190,9 @@
 ## 📊 Progress Summary
 
 - **Total Commits**: 25
-- **Completed**: 23 (92%)
+- **Completed**: 24 (96%)
 - **In Progress**: 0 (0%)
-- **TODO**: 2 (8%)
+- **TODO**: 1 (4%)
 
 ## 🛠️ Technical Decisions
 

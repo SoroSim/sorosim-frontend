@@ -80,6 +80,7 @@ export interface SimulationResult {
 }
 
 export interface ContractEvent {
+  id?: string
   topics: string[]
   data: string
   contractId?: string
