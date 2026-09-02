@@ -3,6 +3,7 @@ import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
 import InvocationHistory from './components/InvocationHistory'
+import { exportSession, importSession } from './utils/sessionManager'
 import type { ContractFunction, LedgerEntry, StateDiff, ContractEvent, InvocationHistory as InvocationHistoryType } from './types'
 
 function App() {
@@ -16,17 +17,57 @@ function App() {
   const [history, setHistory] = useState<InvocationHistoryType[]>([])
   const [showHistory, setShowHistory] = useState(false)
 
+  const handleExportSession = () => {
+    exportSession(history, ledgerEntries, wasmFile?.name)
+  }
+
+  const handleImportSession = async (file: File) => {
+    try {
+      const { history: importedHistory, ledgerEntries: importedLedger } = await importSession(file)
+      setHistory(importedHistory)
+      setLedgerEntries(importedLedger)
+      alert(`Successfully imported session with ${importedHistory.length} invocations and ${importedLedger.length} ledger entries`)
+    } catch (err) {
+      alert(`Failed to import session: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-stellar-dark text-white py-4 px-6 shadow-lg">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">
-            <span className="text-stellar-purple">Soro</span>Sim
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Soroban Contract Simulation & Dry-Run Sandbox
-          </p>
+        <div className="container mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">
+              <span className="text-stellar-purple">Soro</span>Sim
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">
+              Soroban Contract Simulation & Dry-Run Sandbox
+            </p>
+          </div>
+          
+          {/* Session Import */}
+          <div>
+            <label
+              htmlFor="import-session"
+              className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+            >
+              📂 Import Session
+            </label>
+            <input
+              id="import-session"
+              type="file"
+              accept=".json,application/json"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  handleImportSession(file)
+                  e.target.value = ''
+                }
+              }}
+              className="hidden"
+            />
+          </div>
         </div>
       </header>
 
@@ -71,6 +112,7 @@ function App() {
                       alert(`Replay functionality will be implemented to re-run: ${entry.functionName}`)
                     }}
                     onClear={() => setHistory([])}
+                    onExport={handleExportSession}
                   />
                 </div>
               </div>

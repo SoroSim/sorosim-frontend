@@ -5,12 +5,14 @@ interface InvocationHistoryProps {
   history: InvocationHistory[]
   onReplay: (entry: InvocationHistory) => void
   onClear: () => void
+  onExport: () => void
 }
 
 export default function InvocationHistory({
   history,
   onReplay,
   onClear,
+  onExport,
 }: InvocationHistoryProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -50,21 +52,30 @@ export default function InvocationHistory({
 
   return (
     <div className="space-y-3">
-      {/* Header with Clear Button */}
+      {/* Header with Actions */}
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold text-gray-700">
           {history.length} {history.length === 1 ? 'Invocation' : 'Invocations'}
         </div>
-        <button
-          onClick={handleClear}
-          className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
-            showClearConfirm
-              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-              : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
-          }`}
-        >
-          {showClearConfirm ? '⚠️ Click again to confirm' : '🗑️ Clear History'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onExport}
+            className="text-xs font-medium text-stellar-purple hover:underline"
+            title="Export session to JSON"
+          >
+            💾 Export
+          </button>
+          <button
+            onClick={handleClear}
+            className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+              showClearConfirm
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+            }`}
+          >
+            {showClearConfirm ? '⚠️ Confirm' : '🗑️ Clear'}
+          </button>
+        </div>
       </div>
 
       {/* History List */}
