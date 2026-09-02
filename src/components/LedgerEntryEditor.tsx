@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import type { LedgerEntry, LedgerEntryType } from '../types'
+import {
+  AccountEntryForm,
+  ContractDataEntryForm,
+  ContractCodeEntryForm,
+  TrustlineEntryForm,
+} from './LedgerEntryTypeForms'
 
 interface LedgerEntryEditorProps {
   entries: LedgerEntry[]
@@ -113,18 +119,38 @@ interface LedgerEntryFormProps {
 
 function LedgerEntryForm({ entry, onSave, onCancel }: LedgerEntryFormProps) {
   const [type, setType] = useState<LedgerEntryType>(entry?.type || 'Account')
-  const [data, setData] = useState<string>(
+  const [data, setData] = useState<unknown>(entry?.data || {})
+  const [useRawJson, setUseRawJson] = useState(false)
+  const [rawData, setRawData] = useState<string>(
     entry ? JSON.stringify(entry.data, null, 2) : '{}'
   )
   const [error, setError] = useState<string | null>(null)
+
+  const handleTypeChange = (newType: LedgerEntryType) => {
+    setType(newType)
+    // Reset data when type changes
+    setData({})
+    setRawData('{}')
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     try {
-      const parsedData = JSON.parse(data)
-      onSave({ type, data: parsedData })
+      let finalData = data
+
+      if (useRawJson) {
+        finalData = JSON.parse(rawData)
+      }
+
+      // Basic validation
+      if (!finalData || (typeof finalData === 'object' && Object.keys(finalData).length === 0)) {
+        setError('Please provide entry data')
+        return
+      }
+
+      onSave({ type, data: finalData })
     } catch (err) {
       setError('Invalid JSON format. Please check your input.')
     }
@@ -139,7 +165,7 @@ function LedgerEntryForm({ entry, onSave, onCancel }: LedgerEntryFormProps) {
         <select
           id="entry-type"
           value={type}
-          onChange={(e) => setType(e.target.value as LedgerEntryType)}
+          onChange={(e) => handleTypeChange(e.target.value as LedgerEntryType)}
           className="input-field"
         >
           <option value="Account">Account</option>
@@ -149,22 +175,54 @@ function LedgerEntryForm({ entry, onSave, onCancel }: LedgerEntryFormProps) {
         </select>
       </div>
 
-      <div>
-        <label htmlFor="entry-data" className="label">
-          Entry Data (JSON)
-        </label>
-        <textarea
-          id="entry-data"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          rows={8}
-          className="input-field font-mono text-xs"
-          placeholder='{"key": "value"}'
+      {/* Toggle between structured form and raw JSON */}
+      <div className="flex items-center gap-2">
+        <input
+          id="use-raw-json"
+          type="checkbox"
+          checked={useRawJson}
+          onChange={(e) => setUseRawJson(e.target.checked)}
+          className="h-4 w-4 text-stellar-purple focus:ring-stellar-purple border-gray-300 rounded"
         />
-        <p className="text-xs text-gray-600 mt-1">
-          Enter the ledger entry data in JSON format
-        </p>
+        <label htmlFor="use-raw-json" className="text-xs text-gray-700">
+          Use raw JSON editor
+        </label>
       </div>
+
+      {/* Structured Form or Raw JSON */}
+      {useRawJson ? (
+        <div>
+          <label htmlFor="entry-data" className="label">
+            Entry Data (JSON)
+          </label>
+          <textarea
+            id="entry-data"
+            value={rawData}
+            onChange={(e) => setRawData(e.target.value)}
+            rows={10}
+            className="input-field font-mono text-xs"
+            placeholder='{"key": "value"}'
+          />
+          <p className="text-xs text-gray-600 mt-1">
+            Enter the ledger entry data in JSON format
+          </p>
+        </div>
+      ) : (
+        <div>
+          {type === 'Account' && (
+            <AccountEntryForm initialData={data} onDataChange={setData} />
+          )}
+          {type === 'ContractData' && (
+            <ContractDataEntryForm initialData={data} onDataChange={setData} />
+          )}
+          {type === 'ContractCode' && (
+            <ContractCodeEntryForm initialData={data} onDataChange={setData} />
+          )}
+          {type === 'Trustline' && (
+            <TrustlineEntryForm initialData={data} onDataChange={setData} />
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-800">
