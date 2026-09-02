@@ -75,6 +75,31 @@ function App() {
     }
   }, [])
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K or Cmd+K: Toggle settings
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowSettings(prev => !prev)
+      }
+      
+      // Ctrl+H or Cmd+H: Toggle history
+      if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault()
+        setShowHistory(prev => !prev)
+      }
+
+      // Escape: Close modals
+      if (e.key === 'Escape') {
+        setShowSettings(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   const handleSaveSettings = (newSettings: AppSettings) => {
     setSettings(newSettings)
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings))
@@ -110,8 +135,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Skip to main content link for screen readers */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-stellar-purple focus:text-white focus:px-4 focus:py-2 focus:rounded"
+      >
+        Skip to main content
+      </a>
+
       {/* Header */}
-      <header className="bg-stellar-dark text-white py-4 px-6 shadow-lg">
+      <header className="bg-stellar-dark text-white py-4 px-6 shadow-lg" role="banner">
         <div className="container mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">
@@ -123,41 +156,56 @@ function App() {
           </div>
           
           {/* Header Actions */}
-          <div className="flex items-center gap-3">
-            {/* Network Badge */}
-            <div className="bg-gray-700 px-3 py-1 rounded text-xs font-medium">
-              🌐 {settings.network.charAt(0).toUpperCase() + settings.network.slice(1)}
+          <nav aria-label="Main navigation">
+            <div className="flex items-center gap-3">
+              {/* Network Badge */}
+              <div 
+                className="bg-gray-700 px-3 py-1 rounded text-xs font-medium"
+                role="status"
+                aria-label={`Current network: ${settings.network}`}
+              >
+                🌐 {settings.network.charAt(0).toUpperCase() + settings.network.slice(1)}
+              </div>
+
+              {/* Settings Button */}
+              <button
+                onClick={() => setShowSettings(true)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                aria-label="Open settings"
+              >
+                ⚙️ Settings
+              </button>
+
+              {/* Import Session */}
+              <label
+                htmlFor="import-session"
+                className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    document.getElementById('import-session')?.click()
+                  }
+                }}
+              >
+                📂 Import Session
+              </label>
+              <input
+                id="import-session"
+                type="file"
+                accept=".json,application/json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImportSession(file)
+                    e.target.value = ''
+                  }
+                }}
+                className="hidden"
+                aria-label="Import session from JSON file"
+              />
             </div>
-
-            {/* Settings Button */}
-            <button
-              onClick={() => setShowSettings(true)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
-            >
-              ⚙️ Settings
-            </button>
-
-            {/* Import Session */}
-            <label
-              htmlFor="import-session"
-              className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
-            >
-              📂 Import Session
-            </label>
-            <input
-              id="import-session"
-              type="file"
-              accept=".json,application/json"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  handleImportSession(file)
-                  e.target.value = ''
-                }
-              }}
-              className="hidden"
-            />
-          </div>
+          </nav>
         </div>
       </header>
 
@@ -170,10 +218,10 @@ function App() {
       />
 
       {/* Main Content - 3 Panel Layout */}
-      <main className="container mx-auto p-6">
+      <main id="main-content" className="container mx-auto p-6" role="main">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel - Contract Upload & Configuration */}
-          <div className="lg:col-span-1">
+          <section aria-label="Contract configuration" className="lg:col-span-1">
             <ContractPanel
               wasmFile={wasmFile}
               setWasmFile={setWasmFile}
@@ -194,6 +242,9 @@ function App() {
                     ? 'bg-stellar-purple text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
+                aria-expanded={showHistory}
+                aria-controls="invocation-history"
+                aria-label={`${showHistory ? 'Hide' : 'Show'} invocation history with ${history.length} entries`}
               >
                 {showHistory ? '📋 Hide' : '📜 Show'} History ({history.length})
               </button>
@@ -212,14 +263,22 @@ function App() {
             </div>
 
             {sessionLoadedFromUrl && (
-              <div className="mt-2 bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800">
+              <div 
+                className="mt-2 bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800"
+                role="status"
+                aria-live="polite"
+              >
                 ✓ Session loaded from shared URL
               </div>
             )}
 
             {/* History Sidebar */}
             {showHistory && (
-              <div className="mt-4 panel">
+              <aside 
+                id="invocation-history"
+                className="mt-4 panel"
+                aria-label="Invocation history"
+              >
                 <div className="panel-header">Invocation History</div>
                 <div className="panel-content">
                   <InvocationHistory
@@ -232,12 +291,12 @@ function App() {
                     onExport={handleExportSession}
                   />
                 </div>
-              </div>
+              </aside>
             )}
-          </div>
+          </section>
 
           {/* Middle Panel - Invocation & Arguments */}
-          <div className="lg:col-span-1">
+          <section aria-label="Function invocation" className="lg:col-span-1">
             <InvocationPanel
               selectedFunction={selectedFunction}
               wasmFile={wasmFile}
@@ -258,30 +317,31 @@ function App() {
                 setHistory([...history, newEntry])
               }}
             />
-          </div>
+          </section>
 
           {/* Right Panel - State & Results */}
-          <div className="lg:col-span-1">
+          <section aria-label="Simulation results and state" className="lg:col-span-1">
             <StatePanel
               ledgerEntries={ledgerEntries}
               setLedgerEntries={setLedgerEntries}
               stateDiff={stateDiff}
               events={events}
             />
-          </div>
+          </section>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-stellar-dark text-gray-400 py-4 px-6 mt-12">
+      <footer className="bg-stellar-dark text-gray-400 py-4 px-6 mt-12" role="contentinfo">
         <div className="container mx-auto text-center text-sm">
           <p>
             Built for the Stellar ecosystem •{' '}
             <a
               href="https://github.com/sorosim"
-              className="text-stellar-purple hover:underline"
+              className="text-stellar-purple hover:underline focus:outline-none focus:ring-2 focus:ring-stellar-purple focus:ring-offset-2 focus:ring-offset-gray-900 rounded"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Visit SoroSim on GitHub (opens in new tab)"
             >
               Open Source
             </a>
