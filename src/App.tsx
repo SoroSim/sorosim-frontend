@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
 import InvocationHistory from './components/InvocationHistory'
+import SettingsPanel from './components/SettingsPanel'
 import { exportSession, importSession } from './utils/sessionManager'
 import type { 
   ContractFunction, 
@@ -10,8 +11,11 @@ import type {
   StateDiff, 
   ContractEvent, 
   InvocationHistory as InvocationHistoryType,
-  ContractPreset
+  ContractPreset,
+  AppSettings,
 } from './types'
+
+const SETTINGS_STORAGE_KEY = 'sorosim-settings'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
@@ -23,6 +27,30 @@ function App() {
   const [events, setEvents] = useState<ContractEvent[]>([])
   const [history, setHistory] = useState<InvocationHistoryType[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [settings, setSettings] = useState<AppSettings>({
+    rpcEndpoint: 'https://soroban-testnet.stellar.org',
+    network: 'testnet',
+    theme: 'light',
+  })
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as AppSettings
+        setSettings(parsed)
+      } catch (err) {
+        console.error('Failed to load settings:', err)
+      }
+    }
+  }, [])
+
+  const handleSaveSettings = (newSettings: AppSettings) => {
+    setSettings(newSettings)
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings))
+  }
 
   const handleExportSession = () => {
     exportSession(history, ledgerEntries, wasmFile?.name)
@@ -66,8 +94,22 @@ function App() {
             </p>
           </div>
           
-          {/* Session Import */}
-          <div>
+          {/* Header Actions */}
+          <div className="flex items-center gap-3">
+            {/* Network Badge */}
+            <div className="bg-gray-700 px-3 py-1 rounded text-xs font-medium">
+              🌐 {settings.network.charAt(0).toUpperCase() + settings.network.slice(1)}
+            </div>
+
+            {/* Settings Button */}
+            <button
+              onClick={() => setShowSettings(true)}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+            >
+              ⚙️ Settings
+            </button>
+
+            {/* Import Session */}
             <label
               htmlFor="import-session"
               className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
@@ -90,6 +132,14 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        settings={settings}
+        onSave={handleSaveSettings}
+      />
 
       {/* Main Content - 3 Panel Layout */}
       <main className="container mx-auto p-6">
