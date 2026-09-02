@@ -8,7 +8,7 @@ interface InvocationPanelProps {
   wasmFile: File | null
   contractFunctions: ContractFunction[]
   ledgerEntries: LedgerEntry[]
-  onSimulationComplete: (result: SimulationResult) => void
+  onSimulationComplete: (result: SimulationResult, functionName: string, args: FunctionArgument[]) => void
 }
 
 export default function InvocationPanel({
@@ -46,7 +46,7 @@ export default function InvocationPanel({
       })
       
       setSimulationResult(result)
-      onSimulationComplete(result)
+      onSimulationComplete(result, selectedFunction, functionArguments)
     } catch (error) {
       setSimulationError(
         error instanceof Error ? error.message : 'Simulation failed'

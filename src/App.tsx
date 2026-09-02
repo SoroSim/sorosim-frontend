@@ -2,7 +2,8 @@ import { useState } from 'react'
 import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
-import type { ContractFunction, LedgerEntry, StateDiff, ContractEvent } from './types'
+import InvocationHistory from './components/InvocationHistory'
+import type { ContractFunction, LedgerEntry, StateDiff, ContractEvent, InvocationHistory as InvocationHistoryType } from './types'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
@@ -12,6 +13,8 @@ function App() {
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
   const [stateDiff, setStateDiff] = useState<StateDiff[]>([])
   const [events, setEvents] = useState<ContractEvent[]>([])
+  const [history, setHistory] = useState<InvocationHistoryType[]>([])
+  const [showHistory, setShowHistory] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,6 +44,37 @@ function App() {
               setSelectedFunction={setSelectedFunction}
               setParsedFunctions={setParsedFunctions}
             />
+            
+            {/* History Toggle Button */}
+            <div className="mt-4">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                  showHistory
+                    ? 'bg-stellar-purple text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {showHistory ? '📋 Hide' : '📜 Show'} History ({history.length})
+              </button>
+            </div>
+
+            {/* History Sidebar */}
+            {showHistory && (
+              <div className="mt-4 panel">
+                <div className="panel-header">Invocation History</div>
+                <div className="panel-content">
+                  <InvocationHistory
+                    history={history}
+                    onReplay={(entry) => {
+                      // TODO: Implement replay functionality
+                      alert(`Replay functionality will be implemented to re-run: ${entry.functionName}`)
+                    }}
+                    onClear={() => setHistory([])}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Middle Panel - Invocation & Arguments */}
@@ -50,9 +84,19 @@ function App() {
               wasmFile={wasmFile}
               contractFunctions={parsedFunctions}
               ledgerEntries={ledgerEntries}
-              onSimulationComplete={(result) => {
+              onSimulationComplete={(result, functionName, args) => {
                 setStateDiff(result.stateDiff)
                 setEvents(result.events)
+                
+                // Add to history
+                const newEntry: InvocationHistoryType = {
+                  id: crypto.randomUUID(),
+                  timestamp: Date.now(),
+                  functionName,
+                  arguments: args,
+                  result,
+                }
+                setHistory([...history, newEntry])
               }}
             />
           </div>
