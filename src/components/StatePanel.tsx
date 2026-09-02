@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import LedgerEntryEditor from './LedgerEntryEditor'
 import StateDiffViewer from './StateDiffViewer'
-import type { LedgerEntry, StateDiff } from '../types'
+import ContractEventsViewer from './ContractEventsViewer'
+import type { LedgerEntry, StateDiff, ContractEvent } from '../types'
 import { SAMPLE_SNAPSHOTS } from '../utils/sampleSnapshots'
 
 interface LedgerSnapshot {
@@ -14,9 +15,15 @@ interface StatePanelProps {
   ledgerEntries: LedgerEntry[]
   setLedgerEntries: (entries: LedgerEntry[]) => void
   stateDiff?: StateDiff[]
+  events?: ContractEvent[]
 }
 
-export default function StatePanel({ ledgerEntries, setLedgerEntries, stateDiff = [] }: StatePanelProps) {
+export default function StatePanel({ 
+  ledgerEntries, 
+  setLedgerEntries, 
+  stateDiff = [],
+  events = []
+}: StatePanelProps) {
   const [showSampleMenu, setShowSampleMenu] = useState(false)
 
   const handleExportLedger = () => {
@@ -173,9 +180,7 @@ export default function StatePanel({ ledgerEntries, setLedgerEntries, stateDiff 
       <div className="panel">
         <div className="panel-header">Contract Events</div>
         <div className="panel-content">
-          <div className="bg-gray-50 rounded p-4 text-sm text-gray-500">
-            Emitted events will appear here after simulation
-          </div>
+          <ContractEventsViewer events={events} />
         </div>
       </div>
     </div>
