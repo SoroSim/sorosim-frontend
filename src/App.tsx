@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ContractPanel from './components/ContractPanel'
 import InvocationPanel from './components/InvocationPanel'
 import StatePanel from './components/StatePanel'
-import type { ContractFunction, LedgerEntry } from './types'
+import type { ContractFunction, LedgerEntry, StateDiff } from './types'
 
 function App() {
   const [wasmFile, setWasmFile] = useState<File | null>(null)
@@ -10,6 +10,7 @@ function App() {
   const [parsedFunctions, setParsedFunctions] = useState<ContractFunction[]>([])
   const [selectedFunction, setSelectedFunction] = useState<string>('')
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
+  const [stateDiff, setStateDiff] = useState<StateDiff[]>([])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,6 +49,7 @@ function App() {
               wasmFile={wasmFile}
               contractFunctions={parsedFunctions}
               ledgerEntries={ledgerEntries}
+              onSimulationComplete={(result) => setStateDiff(result.stateDiff)}
             />
           </div>
 
@@ -56,6 +58,7 @@ function App() {
             <StatePanel
               ledgerEntries={ledgerEntries}
               setLedgerEntries={setLedgerEntries}
+              stateDiff={stateDiff}
             />
           </div>
         </div>

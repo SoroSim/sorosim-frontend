@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import LedgerEntryEditor from './LedgerEntryEditor'
-import type { LedgerEntry } from '../types'
+import StateDiffViewer from './StateDiffViewer'
+import type { LedgerEntry, StateDiff } from '../types'
 import { SAMPLE_SNAPSHOTS } from '../utils/sampleSnapshots'
 
 interface LedgerSnapshot {
@@ -12,9 +13,10 @@ interface LedgerSnapshot {
 interface StatePanelProps {
   ledgerEntries: LedgerEntry[]
   setLedgerEntries: (entries: LedgerEntry[]) => void
+  stateDiff?: StateDiff[]
 }
 
-export default function StatePanel({ ledgerEntries, setLedgerEntries }: StatePanelProps) {
+export default function StatePanel({ ledgerEntries, setLedgerEntries, stateDiff = [] }: StatePanelProps) {
   const [showSampleMenu, setShowSampleMenu] = useState(false)
 
   const handleExportLedger = () => {
@@ -163,23 +165,7 @@ export default function StatePanel({ ledgerEntries, setLedgerEntries }: StatePan
       <div className="panel">
         <div className="panel-header">State Changes</div>
         <div className="panel-content">
-          <div className="bg-gray-50 rounded p-4 text-sm text-gray-500">
-            State changes will appear here after simulation
-          </div>
-          <div className="mt-3 flex gap-2 text-xs">
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-green-500 rounded"></span>
-              Added
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-yellow-500 rounded"></span>
-              Modified
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-red-500 rounded"></span>
-              Removed
-            </span>
-          </div>
+          <StateDiffViewer diffs={stateDiff} />
         </div>
       </div>
 
