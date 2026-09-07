@@ -50,6 +50,15 @@ function App() {
     }
   }, [])
 
+  // Apply theme to document body
+  useEffect(() => {
+    if (settings.theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [settings.theme])
+
   // Load session from URL on mount
   useEffect(() => {
     if (hasSessionInUrl()) {
@@ -134,7 +143,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Skip to main content link for screen readers */}
       <a
         href="#main-content"
@@ -144,7 +153,7 @@ function App() {
       </a>
 
       {/* Header */}
-      <header className="bg-stellar-dark text-white py-3 md:py-4 px-4 md:px-6 shadow-lg" role="banner">
+      <header className="bg-stellar-dark dark:bg-gray-950 text-white py-3 md:py-4 px-4 md:px-6 shadow-lg" role="banner">
         <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
           <div>
             <h1 className="text-xl md:text-2xl font-bold">
@@ -265,7 +274,7 @@ function App() {
 
             {sessionLoadedFromUrl && (
               <div 
-                className="mt-2 bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800"
+                className="mt-2 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-2 text-xs text-green-800 dark:text-green-200"
                 role="status"
                 aria-live="polite"
               >
@@ -333,7 +342,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-stellar-dark text-gray-400 py-4 px-6 mt-12" role="contentinfo">
+      <footer className="bg-stellar-dark dark:bg-gray-950 text-gray-400 py-4 px-6 mt-12" role="contentinfo">
         <div className="container mx-auto text-center text-sm">
           <p>
             Built for the Stellar ecosystem •{' '}
