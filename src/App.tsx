@@ -5,6 +5,7 @@ import StatePanel from './components/StatePanel'
 import InvocationHistory from './components/InvocationHistory'
 import SettingsPanel from './components/SettingsPanel'
 import ShareSessionButton from './components/ShareSessionButton'
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import { exportSession, importSession } from './utils/sessionManager'
 import { decodeSessionFromUrl, hasSessionInUrl, clearSessionFromUrl } from './utils/urlStateManager'
 import type { 
@@ -30,6 +31,7 @@ function App() {
   const [history, setHistory] = useState<InvocationHistoryType[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [sessionLoadedFromUrl, setSessionLoadedFromUrl] = useState(false)
   const [settings, setSettings] = useState<AppSettings>({
     rpcEndpoint: 'https://soroban-testnet.stellar.org',
@@ -99,9 +101,16 @@ function App() {
         setShowHistory(prev => !prev)
       }
 
+      // ? or Ctrl+/ or Cmd+/: Show keyboard shortcuts
+      if (e.key === '?' || ((e.ctrlKey || e.metaKey) && e.key === '/')) {
+        e.preventDefault()
+        setShowShortcuts(true)
+      }
+
       // Escape: Close modals
       if (e.key === 'Escape') {
         setShowSettings(false)
+        setShowShortcuts(false)
       }
     }
 
@@ -185,6 +194,16 @@ function App() {
                 ⚙️ Settings
               </button>
 
+              {/* Help Button */}
+              <button
+                onClick={() => setShowShortcuts(true)}
+                className="px-3 md:px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-xs md:text-sm font-medium transition-colors touch-manipulation"
+                aria-label="Show keyboard shortcuts"
+                title="Keyboard shortcuts (?)"
+              >
+                ❓ Help
+              </button>
+
               {/* Import Session */}
               <label
                 htmlFor="import-session"
@@ -224,6 +243,12 @@ function App() {
         onClose={() => setShowSettings(false)}
         settings={settings}
         onSave={handleSaveSettings}
+      />
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
       />
 
       {/* Main Content - 3 Panel Layout */}
