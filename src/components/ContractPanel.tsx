@@ -233,8 +233,16 @@ export default function ContractPanel({
               aria-label="Search contract functions"
             />
             
+            {filteredFunctions.length === 0 && functionSearch && (
+              <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded p-2 mb-3 text-xs text-yellow-800 dark:text-yellow-200">
+                No functions match "{functionSearch}"
+              </div>
+            )}
+            
             <label htmlFor="function-select" className="label">
-              Contract Function
+              Contract Function {filteredFunctions.length !== contractFunctions.length && (
+                <span className="text-gray-500">({filteredFunctions.length} of {contractFunctions.length})</span>
+              )}
             </label>
             <select
               id="function-select"
@@ -242,7 +250,7 @@ export default function ContractPanel({
               onChange={(e) => setSelectedFunction(e.target.value)}
               className="input-field"
             >
-              {contractFunctions.map((fn) => (
+              {filteredFunctions.map((fn) => (
                 <option key={fn} value={fn}>
                   {fn}
                 </option>
