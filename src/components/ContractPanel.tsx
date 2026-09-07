@@ -30,6 +30,12 @@ export default function ContractPanel({
   const [error, setError] = useState<string | null>(null)
   const [localParsedFunctions, setLocalParsedFunctions] = useState<ContractFunction[]>([])
   const [contractName, setContractName] = useState<string>('')
+  const [functionSearch, setFunctionSearch] = useState<string>('')
+
+  // Filter functions based on search query
+  const filteredFunctions = contractFunctions.filter((fn) =>
+    fn.toLowerCase().includes(functionSearch.toLowerCase())
+  )
 
   const handleFileSelect = async (file: File) => {
     if (!file.name.endsWith('.wasm')) {
@@ -214,6 +220,19 @@ export default function ContractPanel({
         {/* Function Selector */}
         {contractFunctions.length > 0 && (
           <div>
+            <label htmlFor="function-search" className="label">
+              Search Functions
+            </label>
+            <input
+              id="function-search"
+              type="text"
+              value={functionSearch}
+              onChange={(e) => setFunctionSearch(e.target.value)}
+              placeholder="Type to filter functions..."
+              className="input-field mb-3"
+              aria-label="Search contract functions"
+            />
+            
             <label htmlFor="function-select" className="label">
               Contract Function
             </label>
