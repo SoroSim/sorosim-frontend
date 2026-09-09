@@ -26,10 +26,24 @@ export default function InvocationPanel({
   const [simulationError, setSimulationError] = useState<string | null>(null)
   const [useAdvancedEditor, setUseAdvancedEditor] = useState(false)
   const [showCliOutput, setShowCliOutput] = useState(false)
+  const [copySuccess, setCopySuccess] = useState(false)
 
   const selectedFunctionObj = contractFunctions.find(
     f => f.name === selectedFunction
   ) || null
+
+  const handleCopyResult = async () => {
+    if (!simulationResult) return
+    
+    try {
+      const resultJson = JSON.stringify(simulationResult, null, 2)
+      await navigator.clipboard.writeText(resultJson)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
 
   const handleSimulate = async () => {
     if (!wasmFile || !selectedFunction) {
@@ -141,6 +155,18 @@ export default function InvocationPanel({
           <span>Invocation Result</span>
           {simulationResult && (
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyResult}
+                className={`text-xs px-3 py-1 rounded transition-all font-medium ${
+                  copySuccess
+                    ? 'bg-green-500 text-white'
+                    : 'bg-stellar-purple text-white hover:bg-purple-700'
+                }`}
+                aria-label="Copy result to clipboard"
+                aria-live="polite"
+              >
+                {copySuccess ? '✓ Copied!' : '📋 Copy'}
+              </button>
               <span className="text-xs text-gray-500">
                 {new Date().toLocaleTimeString()}
               </span>

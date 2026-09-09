@@ -30,6 +30,12 @@ export default function ContractPanel({
   const [error, setError] = useState<string | null>(null)
   const [localParsedFunctions, setLocalParsedFunctions] = useState<ContractFunction[]>([])
   const [contractName, setContractName] = useState<string>('')
+  const [functionSearch, setFunctionSearch] = useState<string>('')
+
+  // Filter functions based on search query
+  const filteredFunctions = contractFunctions.filter((fn) =>
+    fn.toLowerCase().includes(functionSearch.toLowerCase())
+  )
 
   const handleFileSelect = async (file: File) => {
     if (!file.name.endsWith('.wasm')) {
@@ -214,8 +220,29 @@ export default function ContractPanel({
         {/* Function Selector */}
         {contractFunctions.length > 0 && (
           <div>
+            <label htmlFor="function-search" className="label">
+              Search Functions
+            </label>
+            <input
+              id="function-search"
+              type="text"
+              value={functionSearch}
+              onChange={(e) => setFunctionSearch(e.target.value)}
+              placeholder="Type to filter functions..."
+              className="input-field mb-3"
+              aria-label="Search contract functions"
+            />
+            
+            {filteredFunctions.length === 0 && functionSearch && (
+              <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded p-2 mb-3 text-xs text-yellow-800 dark:text-yellow-200">
+                No functions match "{functionSearch}"
+              </div>
+            )}
+            
             <label htmlFor="function-select" className="label">
-              Contract Function
+              Contract Function {filteredFunctions.length !== contractFunctions.length && (
+                <span className="text-gray-500">({filteredFunctions.length} of {contractFunctions.length})</span>
+              )}
             </label>
             <select
               id="function-select"
@@ -223,7 +250,7 @@ export default function ContractPanel({
               onChange={(e) => setSelectedFunction(e.target.value)}
               className="input-field"
             >
-              {contractFunctions.map((fn) => (
+              {filteredFunctions.map((fn) => (
                 <option key={fn} value={fn}>
                   {fn}
                 </option>

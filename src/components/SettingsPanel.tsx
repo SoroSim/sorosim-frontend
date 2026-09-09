@@ -192,8 +192,8 @@ export default function SettingsPanel({
                   }
                   className="input-field"
                 >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark (Coming Soon)</option>
+                  <option value="light">☀️ Light</option>
+                  <option value="dark">🌙 Dark</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
                   Choose your preferred color scheme
