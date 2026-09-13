@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { parseWasmFile, formatFunctionSignature } from '../utils/wasmParser'
 import ContractPresetLoader from './ContractPresetLoader'
+import WasmLoadingSkeleton from './WasmLoadingSkeleton'
 import type { ContractFunction, ContractPreset } from '../types'
 
 interface ContractPanelProps {
@@ -208,8 +209,13 @@ export default function ContractPanel({
           </div>
         )}
 
+        {/* Loading Skeleton */}
+        {isLoading && (
+          <WasmLoadingSkeleton count={6} />
+        )}
+
         {/* Contract Name */}
-        {contractName && (
+        {contractName && !isLoading && (
           <div className="bg-stellar-purple bg-opacity-10 border border-stellar-purple rounded p-3">
             <p className="text-sm font-semibold text-stellar-purple">
               📄 {contractName}
@@ -218,7 +224,7 @@ export default function ContractPanel({
         )}
 
         {/* Function Selector */}
-        {contractFunctions.length > 0 && (
+        {contractFunctions.length > 0 && !isLoading && (
           <div>
             <label htmlFor="function-search" className="label">
               Search Functions
@@ -272,7 +278,7 @@ export default function ContractPanel({
         )}
 
         {/* Contract Info */}
-        {wasmFile && (
+        {wasmFile && !isLoading && (
           <div className="bg-gray-50 rounded p-3 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">File Size:</span>
