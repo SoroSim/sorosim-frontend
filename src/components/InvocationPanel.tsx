@@ -27,6 +27,7 @@ export default function InvocationPanel({
   const [useAdvancedEditor, setUseAdvancedEditor] = useState(false)
   const [showCliOutput, setShowCliOutput] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [isValidationValid, setIsValidationValid] = useState(true)
 
   const selectedFunctionObj = contractFunctions.find(
     f => f.name === selectedFunction
@@ -101,6 +102,7 @@ export default function InvocationPanel({
             <ArgumentForm
               selectedFunction={selectedFunctionObj}
               onArgumentsChange={setFunctionArguments}
+              onValidationChange={setIsValidationValid}
             />
           )}
         </div>
@@ -111,7 +113,7 @@ export default function InvocationPanel({
         <div className="panel-content">
           <button
             onClick={handleSimulate}
-            disabled={!wasmFile || !selectedFunction || isSimulating}
+            disabled={!wasmFile || !selectedFunction || isSimulating || !isValidationValid}
             className="btn-primary w-full text-base md:text-lg py-2.5 md:py-3 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             {isSimulating ? (
@@ -142,6 +144,12 @@ export default function InvocationPanel({
               '▶ Simulate Invocation'
             )}
           </button>
+          
+          {!isValidationValid && !isSimulating && (
+            <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800">
+              ⚠️ Please fix validation errors before simulating
+            </div>
+          )}
           
           <p className="text-xs text-gray-500 text-center mt-2">
             Run contract function with mock ledger state

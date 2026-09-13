@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import type { ContractFunction, FunctionArgument, ScValType } from '../types'
+import { validateArgument, type ValidationError } from '../utils/argumentValidator'
 
 interface ArgumentFormProps {
   selectedFunction: ContractFunction | null
   onArgumentsChange: (args: FunctionArgument[]) => void
+  onValidationChange?: (isValid: boolean) => void
 }
 
 const AVAILABLE_TYPES: ScValType[] = [
@@ -26,9 +28,11 @@ const AVAILABLE_TYPES: ScValType[] = [
 export default function ArgumentForm({
   selectedFunction,
   onArgumentsChange,
+  onValidationChange,
 }: ArgumentFormProps) {
   const [arguments_, setArguments] = useState<FunctionArgument[]>([])
   const [isTypeOverrideEnabled, setIsTypeOverrideEnabled] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Map<string, string>>(new Map())
 
   // Initialize arguments when function changes
   useEffect(() => {
@@ -40,11 +44,39 @@ export default function ArgumentForm({
       }))
       setArguments(initialArgs)
       onArgumentsChange(initialArgs)
+      setValidationErrors(new Map())
+      
+      // Notify parent of initial validation state
+      if (onValidationChange) {
+        onValidationChange(true)
+      }
     } else {
       setArguments([])
       onArgumentsChange([])
+      setValidationErrors(new Map())
     }
   }, [selectedFunction])
+
+  // Validate arguments whenever they change
+  useEffect(() => {
+    const errors = new Map<string, string>()
+    let hasErrors = false
+
+    for (const arg of arguments_) {
+      const error = validateArgument(arg)
+      if (error) {
+        errors.set(arg.name, error.message)
+        hasErrors = true
+      }
+    }
+
+    setValidationErrors(errors)
+    
+    // Notify parent component of validation status
+    if (onValidationChange) {
+      onValidationChange(!hasErrors)
+    }
+  }, [arguments_, onValidationChange])
 
   const handleArgumentChange = (index: number, value: string) => {
     const newArgs = [...arguments_]
@@ -91,7 +123,11 @@ export default function ArgumentForm({
         </div>
       )}
 
-      {selectedFunction.inputs.map((input, index) => (
+      {selectedFunction.inputs.map((input, index) => {
+        const hasError = validationErrors.has(input.name)
+        const errorMessage = validationErrors.get(input.name)
+        
+        return (
         <div key={`${input.name}-${index}`} className="border border-gray-200 rounded p-3 space-y-3">
           {/* Argument Header */}
           <div className="flex items-start justify-between">
@@ -136,18 +172,43 @@ export default function ArgumentForm({
                 </span>
               )}
             </label>
-            {renderInputForType(
-              arguments_[index]?.type || input.type,
-              arguments_[index]?.value || '',
-              (value) => handleArgumentChange(index, value),
-              `arg-${index}`
+            <div className={hasError ? 'ring-2 ring-red-500 rounded' : ''}>
+              {renderInputForType(
+                arguments_[index]?.type || input.type,
+                arguments_[index]?.value || '',
+                (value) => handleArgumentChange(index, value),
+                `arg-${index}`
+              )}
+            </div>
+            
+            {/* Validation Error */}
+            {hasError && (
+              <div className="mt-2 flex items-start gap-2 bg-red-50 border border-red-200 rounded p-2">
+                <svg 
+                  className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" 
+                  fill="currentColor" 
+                  viewBox="0 0 20 20"
+                >
+                  <path 
+                    fillRule="evenodd" 
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
+                    clipRule="evenodd" 
+                  />
+                </svg>
+                <p className="text-xs text-red-700">{errorMessage}</p>
+              </div>
             )}
-            <p className="mt-1 text-xs text-gray-500">
-              {getTypeHint(arguments_[index]?.type || input.type)}
-            </p>
+            
+            {/* Type Hint */}
+            {!hasError && (
+              <p className="mt-1 text-xs text-gray-500">
+                {getTypeHint(arguments_[index]?.type || input.type)}
+              </p>
+            )}
           </div>
         </div>
-      ))}
+      )}
+      )}
     </div>
   )
 }
