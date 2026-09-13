@@ -4,6 +4,7 @@ import StateDiffViewer from './StateDiffViewer'
 import ContractEventsViewer from './ContractEventsViewer'
 import type { LedgerEntry, StateDiff, ContractEvent } from '../types'
 import { SAMPLE_SNAPSHOTS } from '../utils/sampleSnapshots'
+import { ledgerEntriesToCSV, downloadCSV, generateCSVFilename } from '../utils/csvExporter'
 
 interface LedgerSnapshot {
   version: string
@@ -44,6 +45,12 @@ export default function StatePanel({
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+  }
+
+  const handleExportCSV = () => {
+    const csvContent = ledgerEntriesToCSV(ledgerEntries)
+    const filename = generateCSVFilename('ledger-state')
+    downloadCSV(csvContent, filename)
   }
 
   const handleImportLedger = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,9 +155,18 @@ export default function StatePanel({
               onClick={handleExportLedger}
               disabled={ledgerEntries.length === 0}
               className="text-sm text-stellar-purple hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-              title="Export ledger snapshot"
+              title="Export ledger snapshot as JSON"
             >
-              📤 Export
+              📤 JSON
+            </button>
+            
+            <button
+              onClick={handleExportCSV}
+              disabled={ledgerEntries.length === 0}
+              className="text-sm text-stellar-purple hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              title="Export ledger state as CSV"
+            >
+              📊 CSV
             </button>
           </div>
         </div>
@@ -162,7 +178,7 @@ export default function StatePanel({
           
           {ledgerEntries.length > 0 && (
             <div className="mt-3 text-xs text-gray-500">
-              💡 Use "Export" to save this ledger state as a JSON file for later reuse
+              💡 Export as JSON for re-importing or CSV for spreadsheet analysis
             </div>
           )}
         </div>
