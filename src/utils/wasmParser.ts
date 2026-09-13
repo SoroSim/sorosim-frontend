@@ -23,13 +23,43 @@ export async function parseWasmFile(file: File): Promise<WasmParseResult> {
   const buffer = await file.arrayBuffer()
   const bytes = new Uint8Array(buffer)
   
+  // Check file size
+  if (bytes.length === 0) {
+    throw new Error('The uploaded file is empty. Please select a valid WASM file.')
+  }
+  
+  if (bytes.length < 8) {
+    throw new Error('File is too small to be a valid WASM file. WASM files must be at least 8 bytes. Did you upload the correct file?')
+  }
+  
   // Validate WASM magic number (0x00 0x61 0x73 0x6d)
-  if (bytes.length < 4 || 
-      bytes[0] !== 0x00 || 
+  if (bytes[0] !== 0x00 || 
       bytes[1] !== 0x61 || 
       bytes[2] !== 0x73 || 
       bytes[3] !== 0x6d) {
-    throw new Error('Invalid WASM file: magic number mismatch')
+    
+    // Check if it might be a text file
+    const firstBytes = String.fromCharCode(...bytes.slice(0, Math.min(100, bytes.length)))
+    if (firstBytes.includes('<!DOCTYPE') || firstBytes.includes('<html')) {
+      throw new Error('This appears to be an HTML file, not a WASM binary. Please upload a .wasm file compiled from your smart contract.')
+    }
+    
+    if (firstBytes.includes('{') || firstBytes.includes('function')) {
+      throw new Error('This appears to be a text or source code file. Please upload a compiled .wasm binary file, not source code.')
+    }
+    
+    throw new Error(
+      'Invalid WASM file format. The file does not have the correct WASM magic number. ' +
+      'Ensure you are uploading a compiled .wasm file from your Soroban contract build output.'
+    )
+  }
+  
+  // Validate WASM version (should be 1)
+  if (bytes.length >= 8 && bytes[4] !== 0x01) {
+    throw new Error(
+      `Unsupported WASM version (${bytes[4]}). Expected version 1. ` +
+      'Your WASM file may be corrupted or from an incompatible compiler.'
+    )
   }
   
   // Mock contract functions based on common Soroban patterns
